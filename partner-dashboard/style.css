@@ -1,0 +1,32 @@
+*{box-sizing:border-box}
+body{margin:0;background:#F7F9FA;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#1A2228;-webkit-font-smoothing:antialiased}
+button,input{font-family:inherit}
+a{color:#00A99D;text-decoration:none}a:hover{color:#008C82;text-decoration:underline}
+input::placeholder{color:#9AA3AB}
+#app{min-height:100vh;display:flex;flex-direction:column}
+/* hover / focus helpers (replace the prototype's style-hover / style-focus) */
+.h-dim:hover{filter:brightness(.96)}
+.h-white:hover{background:#F0FFFC!important}
+.h-dark:hover{background:#3A444C!important}
+.h-red:hover{color:#C0392B!important}
+.h-link:hover{color:#008C82!important;text-decoration:underline!important}
+.h-ul:hover{text-decoration:underline!important}
+.h-opt:hover{background:#F2F7F7!important}
+.h-call:hover{background:#E6FAF7!important;color:#00877C!important}
+.h-pg:hover{border-color:#00C2B2!important}
+tbody tr:hover{background:#FAFCFC}
+.fc:focus{border-color:#00C2B2!important}
+.fw:focus-within{border-color:#00C2B2!important}
+th{padding:12px 16px;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+td{padding:14px 16px;color:#3A444C;font-variant-numeric:tabular-nums}
+/* registration floating-label field */
+.rf{position:relative}
+.rf input{width:100%;border:0;border-bottom:1px solid #e5e7eb;padding:16px 0 8px;font:500 16px 'Be Vietnam Pro';color:#111827;outline:none;background:transparent}
+.rf input.big{font-size:17px}
+.rf input.pw{padding-right:28px}
+.rf label{position:absolute;left:0;top:14px;font-size:15px;font-weight:400;color:#9ca3af;transition:all .15s ease;pointer-events:none}
+.rf:focus-within input{border-bottom:2px solid #00C8CA;padding-bottom:7px}
+.rf:focus-within label,.rf input:not(:placeholder-shown)+label{top:-2px;font-size:11px;font-weight:600}
+.rf:not(.nols):focus-within label,.rf:not(.nols) input:not(:placeholder-shown)+label{letter-spacing:.05em}
+.rf:focus-within label{color:#00A0A0}
+.rf .eye{position:absolute;right:0;top:12px;border:0;background:none;padding:0;cursor:pointer;color:#9ca3af;display:flex}
