@@ -105,7 +105,7 @@ function loginScreen(){
     <img src="assets/tinyclean-logo.png" alt="TinyClean" style="width:72px;height:72px;object-fit:contain;transform:scale(1.35)">
     <h1 style="margin:8px 0 0;font-size:24px;font-weight:600;text-align:center">Cổng đối tác TinyClean</h1>
     <p style="margin:0 0 10px;color:#5B6470;font-size:15px;text-align:center">Đăng nhập để theo dõi khách hàng bạn giới thiệu và hoa hồng</p>
-    <input id="in-phone" data-in="phone" class="fc" placeholder="Số điện thoại / mã đối tác" value="${esc(S.phone)}" style="width:100%;padding:14px 16px;border:1px solid #DDE2E6;border-radius:9px;font:15px 'Be Vietnam Pro';outline:none">
+    <input id="in-phone" data-in="phone" class="fc" placeholder="Số điện thoại" value="${esc(S.phone)}" style="width:100%;padding:14px 16px;border:1px solid #DDE2E6;border-radius:9px;font:15px 'Be Vietnam Pro';outline:none">
     <input type="password" class="fc" placeholder="Mật khẩu" value="password" style="width:100%;padding:14px 16px;border:1px solid #DDE2E6;border-radius:9px;font:15px 'Be Vietnam Pro';outline:none">
     <div style="width:100%;display:flex;justify-content:flex-end;margin-top:-4px"><a href="#" data-act="go-forgot" style="font-size:14px;font-weight:500">Quên mật khẩu?</a></div>
     <button data-act="login" class="h-dim" style="width:100%;margin-top:2px;padding:14px;border:0;border-radius:9px;background:${GRAD};color:#fff;font:600 15px 'Be Vietnam Pro';cursor:pointer">Đăng nhập</button>
