@@ -7,12 +7,12 @@ const ST={
   cancelled:{label:'Hết hạn dùng thử',bg:'#FDE9E7',color:'#B23A2B'}
 };
 const PATTERN=['paid','trial','created','paid','paid','trial','created','cancelled','paid','trial','paid','created','paid','trial','created','paid','paid','created','trial','paid','cancelled','paid','created','trial','paid','created','paid','trial','paid','cancelled','paid','paid','cancelled','paid','paid','cancelled','paid','paid','cancelled','paid'];
-const PLANS=[{name:'Gói 6 tháng',com:89800},{name:'Gói 1 năm',com:159800},{name:'Gói 3 năm',com:399800}];
+const PLANS=[{name:'Gói 6 tháng',com:150000},{name:'Gói 1 năm',com:300000},{name:'Gói 3 năm',com:800000}];
 const ADDRS=['12 Nguyễn Trãi, Q.1, TP.HCM','85 Cầu Giấy, Q. Cầu Giấy, Hà Nội','204 Lê Duẩn, Q. Hải Châu, Đà Nẵng','37 Phan Xích Long, Q. Phú Nhuận, TP.HCM','19 Trần Phú, TP. Nha Trang, Khánh Hòa','56 Hoàng Quốc Việt, Q. Cầu Giấy, Hà Nội','141 Võ Văn Tần, Q.3, TP.HCM'];
 const TODAY=new Date(2026,9,22);          // fixed "today" used by the mock data
 const CUR=202610, PREV=202609;            // current / previous settlement month (yyyymm)
 const PER=10;
-const DISCOUNT='10%';
+const DISCOUNT='5%';
 const PW_OK=/^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 const fmt=n=>n.toLocaleString('vi-VN')+'đ';
 const dstr=d=>d.toLocaleDateString('vi-VN',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -34,7 +34,7 @@ const S={
   loggedIn:false,screen:'login',lang:'VN',
   phone:'0912345678',noCode:false,created:false,newUser:false,menuOpen:false,
   period:'cur',filter:'all',query:'',field:'phone',page:0,
-  q1:'',field1:'phone',page1:0,fieldOpen:false,fieldOpen1:false,
+  q1:'',field1:'phone',page1:0,dq:null,dq1:null,fieldOpen:false,fieldOpen1:false,
   copied:false,copiedTimer:null,
   rPhone:'',rOtp:'',rName:'',rEmail:'',rPw:'',showPw:false
 };
@@ -53,7 +53,14 @@ const SEARCH_IC='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" str
 const EYE='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
 const EYE_OFF='<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18"></path><path d="M10.58 10.58a2 2 0 002.83 2.83"></path><path d="M9.88 5.09A9.5 9.5 0 0112 5c5.5 0 9 5 9 7-.36.63-1.03 1.66-2.02 2.68M6.1 6.1C4.06 7.6 2.6 9.7 2 12c0 2 3.5 7 10 7 1.15 0 2.24-.15 3.24-.42"></path></svg>';
 
-const myCode=()=>S.created?'TINY0009':'MINHANH25';
+function genCode(){ // partner name (no accents, A-Z0-9) + last 4 phone digits; last 5 if already taken
+  const name=S.newUser?S.rName:'Minh Anh Spa',ph=(S.phone||'').replace(/\D/g,'');
+  const base=name.normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/đ/gi,'d').replace(/[^A-Za-z0-9]/g,'').toUpperCase()||'TINY';
+  const taken=['MINHANHSPA0009','NGUYENVANAN5678'];
+  let c=base+ph.slice(-4);if(taken.includes(c))c=base+ph.slice(-5);
+  return c;
+}
+const myCode=()=>S.created?genCode():'MINHANH25';
 const userName=()=>S.newUser?(S.rName.trim()||'Đối tác'):'Minh Anh Spa';
 const initials=()=>S.newUser?(S.rName.trim().split(/\s+/).slice(-2).map(w=>w[0]).join('').toUpperCase()||'ĐT'):'MA';
 
@@ -100,13 +107,13 @@ function loginScreen(){
     <p style="margin:0 0 10px;color:#5B6470;font-size:15px;text-align:center">Đăng nhập để theo dõi khách hàng bạn giới thiệu và hoa hồng</p>
     <input id="in-phone" data-in="phone" class="fc" placeholder="Số điện thoại / mã đối tác" value="${esc(S.phone)}" style="width:100%;padding:14px 16px;border:1px solid #DDE2E6;border-radius:9px;font:15px 'Be Vietnam Pro';outline:none">
     <input type="password" class="fc" placeholder="Mật khẩu" value="password" style="width:100%;padding:14px 16px;border:1px solid #DDE2E6;border-radius:9px;font:15px 'Be Vietnam Pro';outline:none">
-    <div style="width:100%;display:flex;justify-content:flex-end;margin-top:-4px"><a href="#" style="font-size:14px;font-weight:500">Quên mật khẩu?</a></div>
+    <div style="width:100%;display:flex;justify-content:flex-end;margin-top:-4px"><a href="#" data-act="go-forgot" style="font-size:14px;font-weight:500">Quên mật khẩu?</a></div>
     <button data-act="login" class="h-dim" style="width:100%;margin-top:2px;padding:14px;border:0;border-radius:9px;background:${GRAD};color:#fff;font:600 15px 'Be Vietnam Pro';cursor:pointer">Đăng nhập</button>
     <span style="font-size:14px;color:#5B6470;margin-top:8px">Chưa có tài khoản? <button data-act="go-reg" class="h-link" style="border:0;background:none;padding:0;cursor:pointer;font:600 14px 'Be Vietnam Pro';color:#00A99D">Đăng ký tài khoản</button></span>
   </div></main>`;
 }
 
-const regOk=()=>({reg1:S.rPhone.length>=9,reg2:S.rOtp.length===6,reg3:PW_OK.test(S.rPw),reg4:!!S.rName.trim()}[S.screen]);
+const regOk=()=>({reg1:S.rPhone.length>=9,reg2:S.rOtp.length===6,reg3:PW_OK.test(S.rPw),reg4:!!S.rName.trim(),fp1:S.rPhone.length>=9,fp2:S.rOtp.length===6,fp3:PW_OK.test(S.rPw)}[S.screen]);
 function rfield(id,key,label,o={}){
   const type=o.pw&&!S.showPw?'password':(o.type||'text');
   return `<div class="rf ${label==='SĐT'?'nols':''}" style="margin-bottom:${o.mb||'28px'}">
@@ -119,21 +126,24 @@ function regScreen(){
   const sc=S.screen,ok=regOk();
   let body='';
   if(sc==='reg1') body+=`<h1 style="margin:0 0 28px;text-align:center;font-size:20px;font-weight:700;color:#111827">Đăng ký tài khoản</h1>`;
-  if(sc==='reg2'||sc==='reg3') body+=`<div style="display:flex;align-items:center;gap:16px;margin-bottom:28px"><button data-act="reg-back" aria-label="Quay lại" style="border:0;background:none;padding:0;cursor:pointer;font-size:20px;color:#374151;line-height:1">←</button><div style="font-size:17px;font-weight:700;color:#111827">${sc==='reg2'?'Nhập mã xác nhận':'Thiết lập mật khẩu'}</div></div>`;
-  if(sc==='reg2') body+=`<div style="display:flex;justify-content:center;margin-bottom:24px"><img src="assets/ic-sms.svg" alt="SMS" style="width:60px;height:104px"></div>
+  const heading={reg2:'Nhập mã xác nhận',reg3:'Thiết lập mật khẩu',fp1:'Quên mật khẩu',fp2:'Nhập mã xác nhận',fp3:'Đặt lại mật khẩu'}[sc];
+  if(heading) body+=`<div style="display:flex;align-items:center;gap:16px;margin-bottom:28px"><button data-act="reg-back" aria-label="Quay lại" style="border:0;background:none;padding:0;cursor:pointer;font-size:20px;color:#374151;line-height:1">←</button><div style="font-size:17px;font-weight:700;color:#111827">${heading}</div></div>`;
+  if(sc==='fp1') body+=`<div style="display:flex;justify-content:center;margin-bottom:24px"><img src="assets/ic-forgot-password.svg" alt="Quên mật khẩu" style="width:60px;height:104px"></div>
+    <p style="margin:0 0 24px;text-align:center;font-size:15px;line-height:1.6;color:#4b5563">Nhập số điện thoại đã đăng ký để nhận mã xác nhận đặt lại mật khẩu.</p>`;
+  if(sc==='reg2'||sc==='fp2') body+=`<div style="display:flex;justify-content:center;margin-bottom:24px"><img src="assets/ic-sms.svg" alt="SMS" style="width:60px;height:104px"></div>
     <p style="margin:0 0 28px;text-align:center;font-size:15px;line-height:1.6;color:#4b5563">Mã xác nhận đã được gửi đến số điện thoại <strong style="color:#111827">${esc(S.rPhone)}</strong></p>`;
-  if(sc==='reg3') body+=`<div style="display:flex;justify-content:center;margin-bottom:24px"><img src="assets/ic-password.svg" alt="Mật khẩu" style="width:100px;height:104px"></div>
-    <p style="margin:0 0 24px;text-align:center;font-size:16px;color:#111827">Vui lòng nhập mật khẩu để tiếp tục</p>`;
+  if(sc==='reg3'||sc==='fp3') body+=`<div style="display:flex;justify-content:center;margin-bottom:24px"><img src="assets/ic-password.svg" alt="Mật khẩu" style="width:100px;height:104px"></div>
+    <p style="margin:0 0 24px;text-align:center;font-size:16px;${sc==='fp3'?'line-height:1.6;':''}color:#111827">${sc==='fp3'?`Nhập mật khẩu mới cho tài khoản <strong>${esc(S.rPhone)}</strong>`:'Vui lòng nhập mật khẩu để tiếp tục'}</p>`;
   if(sc==='reg4') body+=`<div style="display:flex;justify-content:center;margin-bottom:16px"><img src="assets/ic-success.svg" alt="Thành công" style="width:64px;height:64px"></div>
     <p style="margin:0 0 28px;text-align:center;font-size:15px;line-height:1.6;color:#4b5563">Chúc mừng bạn đã đăng ký tài khoản thành công! Thêm một vài thông tin nhỏ nữa để hoàn tất nhé.</p>
     <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:18px">Thông tin cá nhân</div>`;
-  if(sc==='reg1') body+=rfield('in-rPhone','rPhone','SĐT',{type:'tel',mode:'numeric',big:1});
-  if(sc==='reg2') body+=rfield('in-rOtp','rOtp','MÃ XÁC NHẬN',{mode:'numeric',big:1,max:6});
-  if(sc==='reg3') body+=rfield('in-rPw','rPw','MẬT KHẨU *',{pw:1,big:1,mb:'12px'})+
+  if(sc==='reg1'||sc==='fp1') body+=rfield('in-rPhone','rPhone','SĐT',{type:'tel',mode:'numeric',big:1});
+  if(sc==='reg2'||sc==='fp2') body+=rfield('in-rOtp','rOtp','MÃ XÁC NHẬN',{mode:'numeric',big:1,max:6});
+  if(sc==='reg3'||sc==='fp3') body+=rfield('in-rPw','rPw',sc==='fp3'?'MẬT KHẨU MỚI *':'MẬT KHẨU *',{pw:1,big:1,mb:'12px'})+
     `<div style="font-size:12px;color:#00C8CA;margin:-4px 0 28px;height:16px;line-height:16px;visibility:${PW_OK.test(S.rPw)?'hidden':'visible'}">*Mật khẩu tối thiểu 8 ký tự bao gồm cả chữ và số</div>`;
   if(sc==='reg4') body+=rfield('in-rName','rName','HỌ VÀ TÊN (BẮT BUỘC)',{mb:'22px'})+rfield('in-rEmail','rEmail','EMAIL (KHÔNG BẮT BUỘC)',{type:'email',mb:'26px'});
-  body+=`<button data-act="reg-next" style="width:100%;border:0;border-radius:999px;padding:15px 0;font:700 16px 'Be Vietnam Pro';color:#fff;cursor:${ok?'pointer':'not-allowed'};background:${ok?GRAD135:'#d1d5db'}">${sc==='reg4'?'Vào trang đối tác TinyClean ngay':'Tiếp tục'}</button>`;
-  if(sc==='reg2') body+=`<div style="text-align:center;font-size:13px;font-weight:600;letter-spacing:.03em;color:#00A0A0;margin-top:18px;cursor:pointer">NHẤN ĐỂ GỬI LẠI</div>`;
+  body+=`<button data-act="reg-next" style="width:100%;border:0;border-radius:999px;padding:15px 0;font:700 16px 'Be Vietnam Pro';color:#fff;cursor:${ok?'pointer':'not-allowed'};background:${ok?GRAD135:'#d1d5db'}">${sc==='reg4'?'Vào trang đối tác TinyClean ngay':sc==='fp3'?'Xác nhận':'Tiếp tục'}</button>`;
+  if(sc==='reg2'||sc==='fp2') body+=`<div style="text-align:center;font-size:13px;font-weight:600;letter-spacing:.03em;color:#00A0A0;margin-top:18px;cursor:pointer">NHẤN ĐỂ GỬI LẠI</div>`;
   if(sc==='reg1') body+=`<div style="font-size:13px;line-height:1.6;color:#9ca3af;margin-top:18px">*Bằng việc đăng ký tài khoản, bạn xác nhận đồng ý với <a href="https://tinyuse.ai/tinyclean/privacy" target="_blank" rel="noopener noreferrer" style="color:#00CBCA;text-decoration:underline">điều khoản &amp; điều kiện</a> mà TinyClean quy định.</div>
     <div style="font-size:14px;color:#5B6470;margin-top:16px;text-align:center">Đã có tài khoản? <button data-act="go-login" class="h-link" style="border:0;background:none;padding:0;cursor:pointer;font:600 14px 'Be Vietnam Pro';color:#00A99D">Đăng nhập</button></div>`;
   return `<main style="flex:1;display:flex;align-items:center;justify-content:center;padding:32px 20px;background:#f4faf9"><div style="width:100%;max-width:440px">
@@ -150,8 +160,9 @@ function noCodeScreen(){
     <p style="margin:0 0 8px;color:#5B6470;font-size:15px">Tạo mã giới thiệu để bắt đầu nhận hoa hồng khi khách mua gói TinyClean.</p>
     <button data-act="create-code" class="h-dim" style="width:100%;padding:14px;border:0;border-radius:9px;background:${GRAD};color:#fff;font:600 15px 'Be Vietnam Pro';cursor:pointer">Tạo mã giới thiệu ngay</button></div></main>`;
 }
-const copyBtnStyle=(pad)=>`border:0;cursor:pointer;padding:${pad};border-radius:8px;background:${S.copied?'#00B8A9':'#E6FAF7'};color:${S.copied?'#fff':'#00877C'};font:600 13px 'Be Vietnam Pro';white-space:nowrap`;
-const copyLabel=()=>S.copied?'✓ Đã chép':'Sao chép';
+const copyBtnStyle=(pad)=>`border:0;cursor:pointer;padding:${pad};border-radius:8px;background:#E6FAF7;color:#00877C;font:600 13px 'Be Vietnam Pro';white-space:nowrap`;
+const copyLabel=()=>'Sao chép';
+const toastHtml=()=>S.copied?`<div style="position:fixed;left:50%;bottom:32px;transform:translateX(-50%);z-index:50;background:#1A2228;color:#fff;padding:12px 20px;border-radius:10px;font:500 14px 'Be Vietnam Pro';box-shadow:0 8px 24px rgba(16,24,32,.25);display:flex;align-items:center;gap:8px;max-width:calc(100vw - 32px)"><span style="color:#00C896;font-weight:700">✓</span>Đã sao chép mã thành công</div>`:'';
 function createdScreen(){
   return `<main style="flex:1;display:flex;align-items:center;justify-content:center;padding:48px 20px;background:#F7F9FA"><div style="width:100%;max-width:460px;background:#fff;border:1px solid #E5E9EC;border-radius:16px;padding:40px 32px;display:flex;flex-direction:column;align-items:center;gap:14px;text-align:center">
     <img src="assets/ic-success.svg" alt="Thành công" style="width:64px;height:64px">
@@ -175,12 +186,16 @@ function phoneCell(d,m){
   return `<div style="display:flex;align-items:center;gap:8px;white-space:nowrap"><span>${d.phoneRaw}</span><a ${call} title="Gọi" aria-label="Gọi" class="h-call" style="display:flex;align-items:center;justify-content:center;width:30px;height:30px;background:#F2F4F6;color:#5B6470;border-radius:50%;cursor:pointer;flex:none;text-decoration:none">${PHONE_IC}</a></div>`;
 }
 function searchBox(sfx,field,query,open){
+  const draft=sfx?S.dq1:S.dq,shown=draft!==null?draft:query;
   const label={name:'Tên',phone:'SĐT'}[field],ph={name:'Nhập tên khách hàng',phone:'Nhập số điện thoại'}[field];
   const opts=[['phone','SĐT'],['name','Tên']].map(([k,l])=>{const a=field===k;return `<button data-act="field${sfx}" data-v="${k}" class="h-opt" style="display:flex;align-items:center;justify-content:space-between;gap:12px;border:0;background:${a?'#E6FAF7':'transparent'};padding:9px 12px;border-radius:7px;font:500 14px 'Be Vietnam Pro';color:${a?'#00877C':'#1A2228'};cursor:pointer;text-align:left">${l}<span style="color:#00A99D;font-weight:700">${a?'✓':''}</span></button>`;}).join('');
   return `<div class="fw" data-dd style="display:flex;align-items:center;height:40px;border:1px solid #DDE2E6;border-radius:10px;background:#fff;max-width:100%;position:relative">
     <button data-act="toggle-field${sfx}" style="height:100%;display:flex;align-items:center;gap:6px;border:0;background:none;padding:0 10px 0 14px;font:500 14px 'Be Vietnam Pro';color:#1A2228;cursor:pointer;white-space:nowrap">${label}${CHEV}</button>
     <span style="width:1px;height:20px;background:#E5E9EC"></span>
-    <div style="display:flex;align-items:center;gap:8px;padding:0 14px 0 12px;height:100%">${SEARCH_IC}<input id="in-search${sfx}" data-in="search${sfx}" placeholder="${ph}" value="${esc(query)}" style="width:200px;max-width:100%;border:0;padding:0;font:14px 'Be Vietnam Pro';outline:none;background:transparent"></div>
+    <div style="display:flex;align-items:center;gap:8px;padding:0 14px 0 12px;height:100%">
+      <button data-act="submit${sfx}" aria-label="Tìm kiếm" style="flex:none;border:0;padding:0;background:transparent;display:flex;cursor:pointer">${SEARCH_IC}</button>
+      <input id="in-search${sfx}" data-in="search${sfx}" placeholder="${ph}" value="${esc(shown)}" style="width:200px;max-width:100%;flex:1;min-width:0;border:0;padding:0;font:14px 'Be Vietnam Pro';outline:none;background:transparent">
+      <button data-act="clear-search${sfx}" aria-label="Xóa từ khóa" class="h-x" style="flex:none;width:18px;height:18px;padding:0;border:0;border-radius:50%;background:#C5CCD2;display:flex;align-items:center;justify-content:center;cursor:pointer;visibility:${shown?'visible':'hidden'}"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3.5" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
     ${open?`<div style="position:absolute;top:calc(100% + 6px);left:0;min-width:170px;background:#fff;border:1px solid #E5E9EC;border-radius:10px;box-shadow:0 8px 24px rgba(16,24,32,.10);padding:4px;z-index:10;display:flex;flex-direction:column">${opts}</div>`:''}</div>`;
 }
 const pager=(label,sfx)=>`<div style="padding:14px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #EEF1F3;font-size:13px;color:#6B757D"><span>${label}</span><div style="display:flex;gap:8px">
@@ -207,7 +222,7 @@ function reportScreen(){
   const pend=mList.filter(d=>d.mkey===CUR).reduce((a,d)=>a+d.com,0);
   const isCur=per!=='prev'; // 'cur' (and 'all' for pay-date logic below)
   const mix=PLANS.map(pl=>[pl.name,mList.filter(d=>d.plan===pl).length]).filter(x=>x[1]).map(x=>x[1]+' '+x[0].toLowerCase()).join(' · ');
-  const statusText=mSum===0?'Chưa phát sinh hoa hồng':per==='all'?(pend?'Đã thanh toán '+fmt(mSum-pend)+'\nChưa thanh toán '+fmt(pend):'Đã thanh toán toàn bộ'):per==='cur'?'Thanh toán ngày '+payDateOf(CUR).replace(/^0/,''):'Đã thanh toán '+payDateOf(PREV);
+  const statusText=mSum===0?'Chưa phát sinh hoa hồng':per==='all'?(pend?'Đã thanh toán '+fmt(mSum-pend)+'\nChưa thanh toán '+fmt(pend):'Đã thanh toán toàn bộ'):per==='cur'?'Thanh toán ngày '+payDateOf(CUR).replace(/^0/,''):'Thanh toán ngày '+payDateOf(PREV).replace(/^0/,'');
   const newMix=counts.all?counts.paid+' đã mua gói · '+counts.trial+' đang dùng thử':'Chưa có khách đăng ký mới';
   /* referral-code card width: match one summary card (grid is auto-fit, min 240, gap 16) */
   const w=document.getElementById('app').getBoundingClientRect().width||window.innerWidth;
@@ -250,7 +265,7 @@ function reportScreen(){
         <span style="align-self:flex-start;background:rgba(255,255,255,.22);padding:6px 12px;font-size:13px;font-weight:600;margin-top:4px;white-space:pre-line;border-radius:16px">${statusText}</span>
         ${detailBtn('go-sec1',true)}</div>
       <div style="border-radius:14px;padding:22px 24px;background:#fff;border:1px solid #E5E9EC;display:flex;flex-direction:column;gap:6px">
-        <span style="font-size:14px;font-weight:500;color:#5B6470">Số khách mua gói</span><span style="font-size:32px;font-weight:700">${mList.length}</span>
+        <span style="font-size:14px;font-weight:500;color:#5B6470">Số gói khách mua</span><span style="font-size:32px;font-weight:700">${mList.length}</span>
         <span style="${pill}">${mix||'Chưa có khách mua gói'}</span>${detailBtn('go-sec1',false)}</div>
       <div style="border-radius:14px;padding:22px 24px;background:#fff;border:1px solid #E5E9EC;display:flex;flex-direction:column;gap:6px">
         <span style="font-size:14px;font-weight:500;color:#5B6470">Số khách đăng ký mới</span><span style="font-size:32px;font-weight:700">${counts.all}</span>
@@ -259,8 +274,8 @@ function reportScreen(){
 
     <section id="sec1" style="background:#fff;border:1px solid #E5E9EC;border-radius:14px;overflow:hidden">
       <div style="padding:18px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #EEF1F3">
-        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><h2 style="margin:0;font-size:18px;font-weight:600">1. Khách hàng mua gói ${pLabel}</h2>
-          <a href="Chi tiết hoa hồng theo gói.html" class="h-ul" style="font-size:14px;font-weight:600;color:#00877C;text-decoration:none;display:flex;align-items:center;gap:4px">Xem mức hoa hồng theo gói<span>→</span></a></div>
+        <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><h2 style="margin:0;font-size:18px;font-weight:600">1. Gói khách đã mua ${pLabel}</h2>
+          <a href="#" data-act="noop" class="h-ul" style="font-size:14px;font-weight:600;color:#00877C;text-decoration:none;display:flex;align-items:center;gap:4px">Xem mức hoa hồng theo gói<span>→</span></a></div>
         ${searchBox('1',S.field1,S.q1,S.fieldOpen1)}</div>
       <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:680px;font-size:14px"><thead><tr style="background:#FAFBFC;color:#6B757D;text-align:left">
         ${hd('Tên khách hàng','padding-left:20px')}${hd('Số điện thoại')}${hd('Ngày mua gói')}${hd('Gói')}${hd('Hoa hồng','padding-right:20px;text-align:right')}</tr></thead>
@@ -288,7 +303,7 @@ function render(){
   else if(S.noCode) main=S.created?createdScreen():noCodeScreen();
   else main=reportScreen();
   const y=window.scrollY;
-  app.innerHTML=header()+main;
+  app.innerHTML=header()+main+toastHtml();
   if(keep){const el=document.getElementById(keep.id);if(el){el.focus();try{el.setSelectionRange(keep.s,keep.e);}catch(_){}}}
   if(Math.abs(window.scrollY-y)>1)window.scrollTo(0,y);
 }
@@ -296,40 +311,51 @@ function render(){
 /* ---------- events ---------- */
 const goTo=id=>{const el=document.getElementById(id);if(el)window.scrollTo({top:el.getBoundingClientRect().top+window.scrollY-76,behavior:'smooth'});};
 const ACT={
+  noop:()=>{},
   lang:v=>set({lang:v}),
   menu:()=>set({menuOpen:!S.menuOpen}),'menu-close':()=>set({menuOpen:false}),
   logout:()=>set({loggedIn:false,menuOpen:false,created:false,screen:'login'}),
-  login:()=>set({loggedIn:true,noCode:S.phone.replace(/\s/g,'')==='0900000009',created:false,newUser:false,period:'cur',filter:'all',query:'',q1:'',page:0,page1:0}),
+  login:()=>set({loggedIn:true,noCode:S.phone.replace(/\s/g,'')==='0900000009',created:false,newUser:false,period:'cur',filter:'all',query:'',dq:null,q1:'',dq1:null,page:0,page1:0}),
   'go-reg':()=>set({screen:'reg1',rPhone:'',rOtp:'',rPw:'',rName:'',rEmail:'',showPw:false}),
   'go-login':()=>set({screen:'login'}),
-  'reg-back':()=>set({screen:S.screen==='reg3'?'reg2':'reg1'}),
+  'reg-back':()=>set({screen:{reg3:'reg2',fp1:'login',fp2:'fp1',fp3:'fp2'}[S.screen]||'reg1'}),
+  'go-forgot':()=>set({screen:'fp1',rPhone:S.phone,rOtp:'',rPw:'',showPw:false}),
   'reg-next':()=>{if(!regOk())return;
     if(S.screen==='reg4')return set({loggedIn:true,noCode:true,created:false,newUser:true,phone:S.rPhone,screen:'login'});
-    set({screen:{reg1:'reg2',reg2:'reg3',reg3:'reg4'}[S.screen]});},
+    if(S.screen==='fp3')return set({loggedIn:true,noCode:S.rPhone==='0900000009',created:false,newUser:false,phone:S.rPhone,screen:'login',showPw:false,menuOpen:false});
+    set({screen:{reg1:'reg2',reg2:'reg3',reg3:'reg4',fp1:'fp2',fp2:'fp3'}[S.screen]});},
   'toggle-pw':()=>set({showPw:!S.showPw}),
   'create-code':()=>set({created:true,copied:false}),
   'go-report':()=>set({noCode:false}),
   'copy-code':()=>{try{navigator.clipboard.writeText(myCode());}catch(e){}
     set({copied:true});clearTimeout(S.copiedTimer);S.copiedTimer=setTimeout(()=>set({copied:false}),1800);},
-  period:v=>set({period:v,page:0,page1:0,filter:'all'}),
+  period:v=>set({period:v,page:0,page1:0,filter:'all',query:'',dq:null,q1:'',dq1:null}),
   tab:v=>set({filter:v,page:0}),
   'go-sec1':()=>goTo('sec1'),'go-sec2':()=>goTo('sec2'),
   'toggle-field':()=>set({fieldOpen:!S.fieldOpen,fieldOpen1:false}),'toggle-field1':()=>set({fieldOpen1:!S.fieldOpen1,fieldOpen:false}),
   field:v=>set({field:v,page:0,fieldOpen:false}),field1:v=>set({field1:v,page1:0,fieldOpen1:false}),
+  'clear-search':()=>{set({query:'',dq:null,page:0});const i=document.getElementById('in-search');i&&i.focus();},
+  'clear-search1':()=>{set({q1:'',dq1:null,page1:0});const i=document.getElementById('in-search1');i&&i.focus();},
+  submit:()=>{if(S.dq!==null)set({query:S.dq,dq:null,page:0});},
+  submit1:()=>{if(S.dq1!==null)set({q1:S.dq1,dq1:null,page1:0});},
   prev:()=>set({page:Math.max(0,S.page-1)}),next:()=>set({page:S.page+1}),
   prev1:()=>set({page1:Math.max(0,S.page1-1)}),next1:()=>set({page1:S.page1+1})   // upper bound clamped in render
 };
 document.addEventListener('click',e=>{
   const t=e.target.closest('[data-act]');
-  if(t&&ACT[t.dataset.act]){ACT[t.dataset.act](t.dataset.v);return;}
+  if(t&&ACT[t.dataset.act]){if(t.tagName==='A')e.preventDefault();ACT[t.dataset.act](t.dataset.v);return;}
   if((S.fieldOpen||S.fieldOpen1)&&!e.target.closest('[data-dd]'))set({fieldOpen:false,fieldOpen1:false}); // click outside closes dropdown
+});
+document.addEventListener('keydown',e=>{
+  if(e.key!=='Enter')return;const k=e.target.dataset&&e.target.dataset.in;
+  if(k==='search')ACT.submit();else if(k==='search1')ACT.submit1();
 });
 document.addEventListener('input',e=>{
   const k=e.target.dataset&&e.target.dataset.in;if(!k)return;
   let v=e.target.value;
   if(k==='phone')return set({phone:v.replace(/\s/g,'')});
-  if(k==='search')return set({query:v,page:0});
-  if(k==='search1')return set({q1:v,page1:0});
+  if(k==='search')return set({dq:v});        // search runs on Enter / magnifier click
+  if(k==='search1')return set({dq1:v});
   if(k==='rPhone'||k==='rOtp')v=v.replace(/\D/g,'');
   if(k==='rOtp')v=v.slice(0,6);
   set({[k]:v});
