@@ -275,7 +275,7 @@ function reportScreen(){
     <section id="sec1" style="background:#fff;border:1px solid #E5E9EC;border-radius:14px;overflow:hidden">
       <div style="padding:18px 20px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-bottom:1px solid #EEF1F3">
         <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-start"><h2 style="margin:0;font-size:18px;font-weight:600">1. Gói khách đã mua ${pLabel}</h2>
-          <a href="#" data-act="noop" class="h-ul" style="font-size:14px;font-weight:600;color:#00877C;text-decoration:none;display:flex;align-items:center;gap:4px">Xem mức hoa hồng theo gói<span>→</span></a></div>
+          <a href="commission.html" target="_blank" rel="noopener" class="h-ul" style="font-size:14px;font-weight:600;color:#00877C;text-decoration:none;display:flex;align-items:center;gap:4px">Xem mức hoa hồng theo gói<span>→</span></a></div>
         ${searchBox('1',S.field1,S.q1,S.fieldOpen1)}</div>
       <div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;min-width:680px;font-size:14px"><thead><tr style="background:#FAFBFC;color:#6B757D;text-align:left">
         ${hd('Tên khách hàng','padding-left:20px')}${hd('Số điện thoại')}${hd('Ngày mua gói')}${hd('Gói')}${hd('Hoa hồng','padding-right:20px;text-align:right')}</tr></thead>
